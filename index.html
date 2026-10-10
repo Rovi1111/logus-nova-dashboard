@@ -6,8 +6,6 @@
 <meta name="color-scheme" content="light dark">
 <title>РЦ «Восток» — дашборд диспетчера</title>
 <style>
-  /* Цвета — переменными; семантика одна на весь экран:
-     зелёный — норма, жёлтый — внимание, красный — проблема, синий — информация */
   :root {
     --bg: #f4f5f7;
     --surface: #ffffff;
@@ -64,13 +62,11 @@
     margin: 28px 0 10px;
   }
 
-  /* Цветовые уровни */
   .green  { background: var(--green-bg);  color: var(--green-text); }
   .yellow { background: var(--yellow-bg); color: var(--yellow-text); }
   .red    { background: var(--red-bg);    color: var(--red-text); }
   .blue   { background: var(--blue-bg);   color: var(--blue-text); }
 
-  /* Шапка */
   header {
     display: flex;
     align-items: center;
@@ -82,7 +78,6 @@
   header h1 { font-size: 1.25rem; font-weight: 700; }
   .now { color: var(--text-muted); font-size: 0.875rem; }
 
-  /* Сегментный переключатель на радиокнопках */
   .segmented {
     display: inline-flex;
     padding: 3px;
@@ -115,7 +110,6 @@
     outline-offset: 1px;
   }
 
-  /* Плашка статуса */
   .status {
     border-radius: 18px;
     padding: 20px;
@@ -128,7 +122,6 @@
   }
   .status-action { margin-top: 8px; font-size: 1.0625rem; }
 
-  /* Карточки часов: 4 в ряд на телефоне, 8 на широком экране */
   .hours {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -154,7 +147,6 @@
   }
   .hour-state { font-size: 0.8125rem; font-weight: 600; }
 
-  /* «Что если» */
   .whatif {
     background: var(--muted-bg);
     border-radius: 18px;
@@ -186,7 +178,6 @@
   .longest { margin-top: 16px; }
   .longest strong { font-variant-numeric: tabular-nums; }
 
-  /* Список машин */
   .trucks {
     list-style: none;
     margin: 0;
@@ -285,20 +276,16 @@
 (function () {
   'use strict';
 
-  // ---------- Константы модели ----------
-  var NOW = 14;             // текущий час, фиксирован для демо
-  var WINDOW = 8;           // длина окна прогноза, часов
-  var UNLOAD_MIN = 45;      // разгрузка одной машины, мин
-  var PEOPLE_PER_GATE = 3;  // людей на одни ворота
+  var NOW = 14;
+  var WINDOW = 8;
+  var UNLOAD_MIN = 45;
+  var PEOPLE_PER_GATE = 3;
 
-  // ---------- Синтетические данные ----------
-  // Прогноз машин по часам 00:00–23:00
   var FORECAST = {
     inbound:  [3, 2, 2, 2, 3, 5, 8, 12, 15, 17, 18, 16, 14, 13, 14, 15, 16, 14, 11, 9, 7, 5, 4, 3],
     outbound: [10, 9, 8, 6, 4, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 17, 15, 13, 11]
   };
 
-  // Ближайшие машины; plate/gate = null — внеплановая машина без номера и ворот
   var TRUCKS = {
     inbound: [
       { time: '15:00',  plate: 'А123ВС 23',  who: 'Молочный комбинат', gate: 4,    status: 'Опаздывает',  color: 'yellow' },
@@ -314,14 +301,11 @@
     ]
   };
 
-  // ---------- Расчёт ----------
-  // Пропускная способность, машин в час
   function capacity(gates, people) {
     var working = Math.min(gates, Math.floor(people / PEOPLE_PER_GATE));
     return working * 60 / UNLOAD_MIN;
   }
 
-  // Очередь по часам с 00:00, накопительно
   function queueByHour(cars, cap) {
     var q = 0;
     return cars.map(function (n) {
@@ -330,19 +314,16 @@
     });
   }
 
-  // Часы окна: 8 часов начиная с NOW, после 23:00 — по кругу
   function windowHours() {
     var hours = [];
     for (var i = 0; i < WINDOW; i++) hours.push((NOW + i) % 24);
     return hours;
   }
 
-  // Максимум очереди в окне
   function windowMax(queue) {
     return Math.max.apply(null, windowHours().map(function (h) { return queue[h]; }));
   }
 
-  // Минимальное число ворот k (и 3k людей), при котором очередь в окне ≤ 2
   function recommendGates(cars) {
     for (var k = 1; k <= 30; k++) {
       var q = queueByHour(cars, capacity(k, PEOPLE_PER_GATE * k));
@@ -351,10 +332,8 @@
     return null;
   }
 
-  // ---------- Вспомогательное ----------
   function hh(h) { return (h < 10 ? '0' : '') + h + ':00'; }
 
-  // Склонение: plural(3, 'машина', 'машины', 'машин')
   function plural(n, one, few, many) {
     var d = n % 10, dd = n % 100;
     if (d === 1 && dd !== 11) return one;
@@ -369,7 +348,6 @@
     return node;
   }
 
-  // ---------- Отрисовка ----------
   var $ = function (id) { return document.getElementById(id); };
   var gatesInput = $('gates');
   var peopleInput = $('people');
@@ -450,7 +428,6 @@
       var row = el('li', 'truck');
       var info = el('div', 'truck-info');
 
-      // Первая линия: время · госномер · ворота N
       var line = el('div', 'truck-line');
       line.appendChild(el('strong', null, t.time));
       line.appendChild(document.createTextNode(' · '));
@@ -469,7 +446,6 @@
     });
   }
 
-  // Полный пересчёт экрана
   function render() {
     var mode = currentMode();
     var gates = Number(gatesInput.value);
