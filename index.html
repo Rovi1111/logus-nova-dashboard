@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>РЦ «Восток» — дашборд диспетчера</title>
+<style>
+  /* Цвета — переменными; семантика одна на весь экран:
+     зелёный — норма, жёлтый — внимание, красный — проблема, синий — информация */
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --muted-bg: #e9ebef;
+    --text: #15181d;
+    --text-muted: #626a76;
+    --border: #d9dde3;
+    --accent: #1f5fd1;
+
+    --green-bg: #dcf3e3;  --green-text: #0f5a2c;
+    --yellow-bg: #fdefc2; --yellow-text: #6b4a00;
+    --red-bg: #fbdcd9;    --red-text: #8f1d14;
+    --blue-bg: #dde8fb;   --blue-text: #17458f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418;
+      --surface: #1a1e24;
+      --muted-bg: #232830;
+      --text: #eef0f3;
+      --text-muted: #9aa3b0;
+      --border: #313843;
+      --accent: #7aa7f5;
+
+      --green-bg: #163a24;  --green-text: #9be3b3;
+      --yellow-bg: #40330c; --yellow-text: #f3d681;
+      --red-bg: #4a1b17;    --red-text: #f7aaa3;
+      --blue-bg: #1a2d4d;   --blue-text: #a9c6f7;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 16px 32px;
+  }
+  h1, h2, p { margin: 0; }
+  h2 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 28px 0 10px;
+  }
+
+  /* Цветовые уровни */
+  .green  { background: var(--green-bg);  color: var(--green-text); }
+  .yellow { background: var(--yellow-bg); color: var(--yellow-text); }
+  .red    { background: var(--red-bg);    color: var(--red-text); }
+  .blue   { background: var(--blue-bg);   color: var(--blue-text); }
+
+  /* Шапка */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  header h1 { font-size: 1.25rem; font-weight: 700; }
+  .now { color: var(--text-muted); font-size: 0.875rem; }
+
+  /* Сегментный переключатель на радиокнопках */
+  .segmented {
+    display: inline-flex;
+    padding: 3px;
+    margin: 0;
+    border: 0;
+    border-radius: 12px;
+    background: var(--muted-bg);
+  }
+  .segmented input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .segmented label {
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .segmented input:checked + label {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
+  .segmented input:focus-visible + label {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  /* Плашка статуса */
+  .status {
+    border-radius: 18px;
+    padding: 20px;
+  }
+  .status-title {
+    font-size: clamp(1.5rem, 6vw, 2.125rem);
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .status-action { margin-top: 8px; font-size: 1.0625rem; }
+
+  /* Карточки часов: 4 в ряд на телефоне, 8 на широком экране */
+  .hours {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 720px) {
+    .hours { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  }
+  .hour {
+    border-radius: 14px;
+    padding: 10px 4px 12px;
+    text-align: center;
+  }
+  .hour-time { font-size: 0.8125rem; font-weight: 600; }
+  .hour-count {
+    font-size: 1.875rem;
+    font-weight: 750;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .hour-state { font-size: 0.8125rem; font-weight: 600; }
+
+  /* «Что если» */
+  .whatif {
+    background: var(--muted-bg);
+    border-radius: 18px;
+    padding: 18px 20px 20px;
+  }
+  .sliders { display: grid; gap: 18px; }
+  @media (min-width: 720px) {
+    .sliders { grid-template-columns: 1fr 1fr; gap: 28px; }
+  }
+  .slider-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .slider-head label { font-weight: 600; }
+  .slider-head output {
+    font-size: 1.5rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    display: block;
+    width: 100%;
+    height: 32px;
+    margin: 4px 0 0;
+    accent-color: var(--accent);
+  }
+  .longest { margin-top: 16px; }
+  .longest strong { font-variant-numeric: tabular-nums; }
+
+  /* Список машин */
+  .trucks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .truck {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .truck + .truck { border-top: 1px solid var(--border); }
+  .truck-info { min-width: 0; }
+  .truck-line { overflow-wrap: anywhere; }
+  .truck-sub, .unknown { color: var(--text-muted); }
+  .truck-sub { font-size: 0.875rem; }
+  .badge {
+    flex: none;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  footer {
+    margin-top: 32px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>РЦ «Восток»</h1>
+      <p class="now">Сейчас 14:00</p>
+    </div>
+    <fieldset class="segmented" aria-label="Режим">
+      <input type="radio" name="mode" id="mode-in" value="inbound" checked>
+      <label for="mode-in">Приёмка</label>
+      <input type="radio" name="mode" id="mode-out" value="outbound">
+      <label for="mode-out">Отгрузка</label>
+    </fieldset>
+  </header>
+
+  <section id="status" class="status" aria-live="polite">
+    <p id="status-title" class="status-title"></p>
+    <p id="status-action" class="status-action"></p>
+  </section>
+
+  <section>
+    <h2>Ближайшие 8 часов</h2>
+    <ul id="hours" class="hours"></ul>
+  </section>
+
+  <section>
+    <h2>Что если</h2>
+    <div class="whatif">
+      <div class="sliders">
+        <div>
+          <div class="slider-head">
+            <label for="gates">Открыто ворот</label>
+            <output id="gates-value" for="gates"></output>
+          </div>
+          <input type="range" id="gates" min="6" max="16" step="1" value="10">
+        </div>
+        <div>
+          <div class="slider-head">
+            <label for="people">Людей на смене</label>
+            <output id="people-value" for="people"></output>
+          </div>
+          <input type="range" id="people" min="15" max="48" step="1" value="27">
+        </div>
+      </div>
+      <p id="longest" class="longest"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ближайшие машины</h2>
+    <ul id="trucks" class="trucks"></ul>
+  </section>
+
+  <footer>Демо-модель на синтетических данных · Команда №__ · Logus Nova 2026</footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Константы модели ----------
+  var NOW = 14;             // текущий час, фиксирован для демо
+  var WINDOW = 8;           // длина окна прогноза, часов
+  var UNLOAD_MIN = 45;      // разгрузка одной машины, мин
+  var PEOPLE_PER_GATE = 3;  // людей на одни ворота
+
+  // ---------- Синтетические данные ----------
+  // Прогноз машин по часам 00:00–23:00
+  var FORECAST = {
+    inbound:  [3, 2, 2, 2, 3, 5, 8, 12, 15, 17, 18, 16, 14, 13, 14, 15, 16, 14, 11, 9, 7, 5, 4, 3],
+    outbound: [10, 9, 8, 6, 4, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 17, 15, 13, 11]
+  };
+
+  // Ближайшие машины; plate/gate = null — внеплановая машина без номера и ворот
+  var TRUCKS = {
+    inbound: [
+      { time: '15:00',  plate: 'А123ВС 23',  who: 'Молочный комбинат', gate: 4,    status: 'Опаздывает',  color: 'yellow' },
+      { time: '15:00',  plate: 'К456МН 93',  who: 'Хлебозавод',        gate: 6,    status: 'Вовремя',     color: 'green' },
+      { time: '≈15:30', plate: null,         who: 'Овощная база',      gate: null, status: 'Внеплановая', color: 'red' },
+      { time: '16:00',  plate: 'Т789ОР 123', who: 'Напитки',           gate: 2,    status: 'Записан',     color: 'blue' }
+    ],
+    outbound: [
+      { time: '18:00', plate: 'М104ЕК 23',  who: 'Магазин №214',   gate: 7,  status: 'Грузится',   color: 'green' },
+      { time: '18:30', plate: 'В512ХА 93',  who: 'Магазин №087',   gate: 9,  status: 'Сборка',     color: 'yellow' },
+      { time: '19:00', plate: 'Р031ОТ 123', who: 'Региональный РЦ', gate: 11, status: 'Записан',    color: 'blue' },
+      { time: '19:30', plate: 'Н220ВУ 23',  who: 'Магазин №301',   gate: 8,  status: 'Опаздывает', color: 'yellow' }
+    ]
+  };
+
+  // ---------- Расчёт ----------
+  // Пропускная способность, машин в час
+  function capacity(gates, people) {
+    var working = Math.min(gates, Math.floor(people / PEOPLE_PER_GATE));
+    return working * 60 / UNLOAD_MIN;
+  }
+
+  // Очередь по часам с 00:00, накопительно
+  function queueByHour(cars, cap) {
+    var q = 0;
+    return cars.map(function (n) {
+      q = Math.max(0, q + n - cap);
+      return q;
+    });
+  }
+
+  // Часы окна: 8 часов начиная с NOW, после 23:00 — по кругу
+  function windowHours() {
+    var hours = [];
+    for (var i = 0; i < WINDOW; i++) hours.push((NOW + i) % 24);
+    return hours;
+  }
+
+  // Максимум очереди в окне
+  function windowMax(queue) {
+    return Math.max.apply(null, windowHours().map(function (h) { return queue[h]; }));
+  }
+
+  // Минимальное число ворот k (и 3k людей), при котором очередь в окне ≤ 2
+  function recommendGates(cars) {
+    for (var k = 1; k <= 30; k++) {
+      var q = queueByHour(cars, capacity(k, PEOPLE_PER_GATE * k));
+      if (windowMax(q) <= 2) return k;
+    }
+    return null;
+  }
+
+  // ---------- Вспомогательное ----------
+  function hh(h) { return (h < 10 ? '0' : '') + h + ':00'; }
+
+  // Склонение: plural(3, 'машина', 'машины', 'машин')
+  function plural(n, one, few, many) {
+    var d = n % 10, dd = n % 100;
+    if (d === 1 && dd !== 11) return one;
+    if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return few;
+    return many;
+  }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  // ---------- Отрисовка ----------
+  var $ = function (id) { return document.getElementById(id); };
+  var gatesInput = $('gates');
+  var peopleInput = $('people');
+
+  function currentMode() {
+    return document.querySelector('input[name="mode"]:checked').value;
+  }
+
+  function renderStatus(cars, queue, gates, people) {
+    var hours = windowHours();
+    var wq = windowMax(queue);
+    var level, title, action;
+
+    if (wq > 5) {
+      level = 'red';
+      var firstRed = hours.filter(function (h) { return queue[h] > 5; })[0];
+      var n = Math.round(wq);
+      title = 'К ' + hh(firstRed) + ' очередь до ' + n + ' ' + plural(n, 'машины', 'машин', 'машин');
+
+      var k = recommendGates(cars);
+      var addGates = k === null ? 0 : Math.max(0, k - gates);
+      var addPeople = k === null ? 0 : Math.max(0, PEOPLE_PER_GATE * k - people);
+      var parts = [];
+      if (addGates > 0) parts.push('откройте ещё ' + addGates + ' ворот');
+      if (addPeople > 0) parts.push('выведите ещё ' + addPeople + ' чел.');
+      action = 'Что сделать: ' + (parts.length ? parts.join(' и ') : 'перераспределите людей по воротам.');
+    } else if (wq > 0) {
+      level = 'yellow';
+      var firstBusy = hours.filter(function (h) { return queue[h] > 0; })[0];
+      title = 'Будет плотно с ' + hh(firstBusy);
+      action = 'Небольшая очередь, держите резерв людей под рукой.';
+    } else {
+      level = 'green';
+      title = 'Всё спокойно';
+      action = 'Ворот и людей хватает до 22:00.';
+    }
+
+    $('status').className = 'status ' + level;
+    $('status-title').textContent = title;
+    $('status-action').textContent = action;
+  }
+
+  function renderHours(cars, queue, cap) {
+    var list = $('hours');
+    list.textContent = '';
+    windowHours().forEach(function (h) {
+      var q = queue[h];
+      var level, word;
+      if (q > 5) { level = 'red'; word = 'очередь'; }
+      else if (q > 0 || cars[h] / cap >= 0.85) { level = 'yellow'; word = 'плотно'; }
+      else { level = 'green'; word = 'свободно'; }
+
+      var card = el('li', 'hour ' + level);
+      card.appendChild(el('div', 'hour-time', hh(h)));
+      var count = el('div', 'hour-count', cars[h]);
+      count.setAttribute('aria-label', cars[h] + ' ' + plural(cars[h], 'машина', 'машины', 'машин'));
+      card.appendChild(count);
+      card.appendChild(el('div', 'hour-state', word));
+      list.appendChild(card);
+    });
+  }
+
+  function renderLongest(queue, cap) {
+    var maxQ = Math.max.apply(null, queue);
+    var n = Math.round(maxQ);
+    var wait = Math.round(maxQ / cap * 60);
+    var p = $('longest');
+    p.textContent = 'Самая длинная очередь сегодня: ';
+    p.appendChild(el('strong', null, n + ' ' + plural(n, 'машина', 'машины', 'машин')));
+    p.appendChild(document.createTextNode(', ждать до '));
+    p.appendChild(el('strong', null, wait + ' мин.'));
+  }
+
+  function renderTrucks(mode) {
+    var list = $('trucks');
+    list.textContent = '';
+    TRUCKS[mode].forEach(function (t) {
+      var row = el('li', 'truck');
+      var info = el('div', 'truck-info');
+
+      // Первая линия: время · госномер · ворота N
+      var line = el('div', 'truck-line');
+      line.appendChild(el('strong', null, t.time));
+      line.appendChild(document.createTextNode(' · '));
+      if (t.plate) {
+        line.appendChild(document.createTextNode(t.plate));
+        if (t.gate != null) line.appendChild(document.createTextNode(' · ворота ' + t.gate));
+      } else {
+        line.appendChild(el('span', 'unknown', 'номер неизвестен'));
+      }
+      info.appendChild(line);
+      info.appendChild(el('div', 'truck-sub', t.who));
+
+      row.appendChild(info);
+      row.appendChild(el('span', 'badge ' + t.color, t.status));
+      list.appendChild(row);
+    });
+  }
+
+  // Полный пересчёт экрана
+  function render() {
+    var mode = currentMode();
+    var gates = Number(gatesInput.value);
+    var people = Number(peopleInput.value);
+    var cars = FORECAST[mode];
+    var cap = capacity(gates, people);
+    var queue = queueByHour(cars, cap);
+
+    $('gates-value').textContent = gates;
+    $('people-value').textContent = people;
+
+    renderStatus(cars, queue, gates, people);
+    renderHours(cars, queue, cap);
+    renderLongest(queue, cap);
+    renderTrucks(mode);
+  }
+
+  gatesInput.addEventListener('input', render);
+  peopleInput.addEventListener('input', render);
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function (radio) {
+    radio.addEventListener('change', render);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
