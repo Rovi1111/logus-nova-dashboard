@@ -59,7 +59,20 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin: 28px 0 10px;
+  }
+  section { margin-top: 28px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .hint {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
   }
 
   .green  { background: var(--green-bg);  color: var(--green-text); }
@@ -85,6 +98,7 @@
     border: 0;
     border-radius: 12px;
     background: var(--muted-bg);
+    min-width: 0;
   }
   .segmented input {
     position: absolute;
@@ -99,7 +113,9 @@
     color: var(--text-muted);
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
   }
+  .segmented.small label { padding: 6px 11px; font-size: 0.875rem; }
   .segmented input:checked + label {
     background: var(--surface);
     color: var(--text);
@@ -109,20 +125,22 @@
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
+  .whatif .segmented { background: var(--bg); }
 
   .status {
+    margin-top: 0;
     border-radius: 18px;
     padding: 20px;
   }
   .status-title {
-    font-size: clamp(1.5rem, 6vw, 2.125rem);
+    font-size: clamp(1.375rem, 5.6vw, 2rem);
     font-weight: 750;
-    line-height: 1.15;
+    line-height: 1.18;
     letter-spacing: -0.01em;
   }
   .status-action { margin-top: 8px; font-size: 1.0625rem; }
 
-  .hours {
+  .cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
@@ -131,39 +149,45 @@
     padding: 0;
   }
   @media (min-width: 720px) {
-    .hours { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .cards { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .cards.days { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   }
-  .hour {
+  .card {
     border-radius: 14px;
-    padding: 10px 4px 12px;
+    padding: 10px 2px 11px;
     text-align: center;
   }
-  .hour-time { font-size: 0.8125rem; font-weight: 600; }
-  .hour-count {
+  .card-time { font-size: 0.8125rem; font-weight: 600; }
+  .card-count {
     font-size: 1.875rem;
     font-weight: 750;
     line-height: 1.15;
     font-variant-numeric: tabular-nums;
   }
-  .hour-state { font-size: 0.8125rem; font-weight: 600; }
+  .card-wait, .card-flow {
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-flow { opacity: 0.8; }
+  .card-state { margin-top: 4px; font-size: 0.8125rem; font-weight: 700; }
 
   .whatif {
     background: var(--muted-bg);
     border-radius: 18px;
     padding: 18px 20px 20px;
   }
-  .sliders { display: grid; gap: 18px; }
+  .controls { display: grid; gap: 18px; }
   @media (min-width: 720px) {
-    .sliders { grid-template-columns: 1fr 1fr; gap: 28px; }
+    .controls { grid-template-columns: 1fr 1fr; gap: 20px 28px; }
   }
-  .slider-head {
+  .control-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 12px;
   }
-  .slider-head label { font-weight: 600; }
-  .slider-head output {
+  .control-head label, .control-title { font-weight: 600; }
+  .control-head output {
     font-size: 1.5rem;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
@@ -175,8 +199,40 @@
     margin: 4px 0 0;
     accent-color: var(--accent);
   }
-  .longest { margin-top: 16px; }
-  .longest strong { font-variant-numeric: tabular-nums; }
+  .slots-control { display: grid; gap: 8px; align-content: start; justify-items: start; }
+  .gates-note { margin-top: 16px; font-weight: 600; }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .compare-tile {
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 0;
+  }
+  .compare-tile.active { border-color: var(--accent); }
+  .compare-name { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); }
+  .compare-queue {
+    font-size: 1.375rem;
+    font-weight: 750;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  .compare-wait, .compare-note { font-size: 0.875rem; }
+  .compare-note { color: var(--text-muted); }
+
+  .feedback {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+  .feedback strong { font-variant-numeric: tabular-nums; }
 
   .trucks {
     list-style: none;
@@ -207,6 +263,26 @@
     font-weight: 600;
     white-space: nowrap;
   }
+  .slot-btn {
+    margin-top: 8px;
+    padding: 7px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .slot-btn:hover { background: var(--blue-bg); }
+  .slot-done {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--blue-text);
+  }
 
   footer {
     margin-top: 32px;
@@ -221,7 +297,7 @@
   <header>
     <div>
       <h1>РЦ «Восток»</h1>
-      <p class="now">Сейчас 14:00</p>
+      <p id="now" class="now"></p>
     </div>
     <fieldset class="segmented" aria-label="Режим">
       <input type="radio" name="mode" id="mode-in" value="inbound" checked>
@@ -237,35 +313,68 @@
   </section>
 
   <section>
-    <h2>Ближайшие 8 часов</h2>
-    <ul id="hours" class="hours"></ul>
+    <div class="section-head">
+      <h2 id="cards-title"></h2>
+      <fieldset class="segmented small" aria-label="Длина прогноза">
+        <input type="radio" name="horizon" id="hz-h8" value="h8" checked>
+        <label for="hz-h8">8 часов</label>
+        <input type="radio" name="horizon" id="hz-d7" value="d7">
+        <label for="hz-d7">7 дней</label>
+        <input type="radio" name="horizon" id="hz-d14" value="d14">
+        <label for="hz-d14">14 дней</label>
+      </fieldset>
+    </div>
+    <p id="cards-hint" class="hint"></p>
+    <ul id="cards" class="cards"></ul>
   </section>
 
   <section>
-    <h2>Что если</h2>
+    <div class="section-head"><h2>Что если</h2></div>
     <div class="whatif">
-      <div class="sliders">
+      <div class="controls">
         <div>
-          <div class="slider-head">
+          <div class="control-head">
             <label for="gates">Открыто ворот</label>
             <output id="gates-value" for="gates"></output>
           </div>
           <input type="range" id="gates" min="6" max="16" step="1" value="10">
         </div>
         <div>
-          <div class="slider-head">
+          <div class="control-head">
             <label for="people">Людей на смене</label>
             <output id="people-value" for="people"></output>
           </div>
           <input type="range" id="people" min="15" max="48" step="1" value="27">
         </div>
+        <div>
+          <div class="control-head">
+            <label for="flow">Поток машин</label>
+            <output id="flow-value" for="flow"></output>
+          </div>
+          <input type="range" id="flow" min="0" max="50" step="5" value="0">
+        </div>
+        <div class="slots-control">
+          <span class="control-title" id="slots-title">Запись на время</span>
+          <fieldset class="segmented small" aria-labelledby="slots-title">
+            <input type="radio" name="slots" id="slots-off" value="off" checked>
+            <label for="slots-off">Без слотов</label>
+            <input type="radio" name="slots" id="slots-on" value="on">
+            <label for="slots-on">Со слотами</label>
+          </fieldset>
+        </div>
       </div>
-      <p id="longest" class="longest"></p>
+      <p id="gates-note" class="gates-note"></p>
+      <div id="compare" class="compare"></div>
     </div>
   </section>
 
   <section>
-    <h2>Ближайшие машины</h2>
+    <div class="section-head"><h2>Прогноз против факта</h2></div>
+    <p id="feedback" class="feedback"></p>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Ближайшие машины</h2></div>
     <ul id="trucks" class="trucks"></ul>
   </section>
 
@@ -276,63 +385,155 @@
 (function () {
   'use strict';
 
-  var NOW = 14;
-  var WINDOW = 8;
   var UNLOAD_MIN = 45;
   var PEOPLE_PER_GATE = 3;
+  var FACT_GATES = 10;
+  var FACT_PEOPLE = 27;
+  var SIM_DAYS = 15;
+  var SLOT_REACH = 4;
 
-  var FORECAST = {
+  var BASE = {
     inbound:  [3, 2, 2, 2, 3, 5, 8, 12, 15, 17, 18, 16, 14, 13, 14, 15, 16, 14, 11, 9, 7, 5, 4, 3],
     outbound: [10, 9, 8, 6, 4, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 17, 15, 13, 11]
   };
 
+  var DEVIATION = [0, 1, 0, -1, 0, 1, -1, 1, -1, 2, -1, 0, 1, -1, 1, 0, -2, 1, 0, 1, -1, 0, 1, -1];
+
+  var DAY_FACTOR = {
+    inbound:  [0.6, 1, 0.95, 1, 1.1, 1.25, 0.8],
+    outbound: [0.7, 1.05, 1, 1, 1.1, 1.2, 1.15]
+  };
+
   var TRUCKS = {
     inbound: [
-      { time: '15:00',  plate: 'А123ВС 23',  who: 'Молочный комбинат', gate: 4,    status: 'Опаздывает',  color: 'yellow' },
-      { time: '15:00',  plate: 'К456МН 93',  who: 'Хлебозавод',        gate: 6,    status: 'Вовремя',     color: 'green' },
-      { time: '≈15:30', plate: null,         who: 'Овощная база',      gate: null, status: 'Внеплановая', color: 'red' },
-      { time: '16:00',  plate: 'Т789ОР 123', who: 'Напитки',           gate: 2,    status: 'Записан',     color: 'blue' }
+      { offset: 60,  plate: 'А123ВС 23',  who: 'Молочный комбинат', gate: 4,    status: 'Опаздывает',  color: 'yellow', slot: true },
+      { offset: 60,  plate: 'К456МН 93',  who: 'Хлебозавод',        gate: 6,    status: 'Вовремя',     color: 'green' },
+      { offset: 90,  plate: null,         who: 'Овощная база',      gate: null, status: 'Внеплановая', color: 'red', slot: true, approx: true },
+      { offset: 120, plate: 'Т789ОР 123', who: 'Напитки',           gate: 2,    status: 'Записан',     color: 'blue' }
     ],
     outbound: [
-      { time: '18:00', plate: 'М104ЕК 23',  who: 'Магазин №214',   gate: 7,  status: 'Грузится',   color: 'green' },
-      { time: '18:30', plate: 'В512ХА 93',  who: 'Магазин №087',   gate: 9,  status: 'Сборка',     color: 'yellow' },
-      { time: '19:00', plate: 'Р031ОТ 123', who: 'Региональный РЦ', gate: 11, status: 'Записан',    color: 'blue' },
-      { time: '19:30', plate: 'Н220ВУ 23',  who: 'Магазин №301',   gate: 8,  status: 'Опаздывает', color: 'yellow' }
+      { offset: 60,  plate: 'М104ЕК 23',  who: 'Магазин №214',    gate: 7,  status: 'Грузится',   color: 'green' },
+      { offset: 90,  plate: 'В512ХА 93',  who: 'Магазин №087',    gate: 9,  status: 'Сборка',     color: 'yellow' },
+      { offset: 120, plate: 'Р031ОТ 123', who: 'Региональный РЦ', gate: 11, status: 'Записан',    color: 'blue' },
+      { offset: 150, plate: 'Н220ВУ 23',  who: 'Магазин №301',    gate: 8,  status: 'Опаздывает', color: 'yellow', slot: true }
     ]
   };
 
+  var WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  var HORIZONS = {
+    h8:  { title: 'Ближайшие 8 часов', span: '8 часов', days: 0 },
+    d7:  { title: 'Ближайшие 7 дней',  span: '7 дней',  days: 7 },
+    d14: { title: 'Ближайшие 14 дней', span: '14 дней', days: 14 }
+  };
+
+  var pinnedHour = parseInt(new URLSearchParams(location.search).get('now'), 10);
+  var offered = {};
+
+  function clock() {
+    var d = new Date();
+    if (pinnedHour >= 0 && pinnedHour <= 23) d.setHours(pinnedHour, 0, 0, 0);
+    return d;
+  }
+
+  function workingGates(gates, people) {
+    return Math.min(gates, Math.floor(people / PEOPLE_PER_GATE));
+  }
+
   function capacity(gates, people) {
-    var working = Math.min(gates, Math.floor(people / PEOPLE_PER_GATE));
-    return working * 60 / UNLOAD_MIN;
+    return workingGates(gates, people) * 60 / UNLOAD_MIN;
   }
 
-  function queueByHour(cars, cap) {
+  function forecastAt(mode, t, today) {
+    var day = Math.floor(t / 24);
+    var factor = day === 0 ? 1 : DAY_FACTOR[mode][(today.getDay() + day) % 7];
+    return BASE[mode][t % 24] * factor;
+  }
+
+  function actualAt(mode, hour) {
+    return Math.max(0, BASE[mode][hour] + DEVIATION[hour]);
+  }
+
+  function spread(arrivals, from, cap) {
+    var moved = [];
+    for (var t = from; t < arrivals.length; t++) {
+      var excess = arrivals[t] - cap;
+      moved[t] = 0;
+      for (var d = 1; d <= SLOT_REACH && excess > 0; d++) {
+        var targets = [t - d, t + d];
+        for (var i = 0; i < targets.length && excess > 0; i++) {
+          var j = targets[i];
+          if (j < from || j >= arrivals.length) continue;
+          var part = Math.min(cap - arrivals[j], excess);
+          if (part <= 0) continue;
+          arrivals[j] += part;
+          arrivals[t] -= part;
+          excess -= part;
+          moved[t] += part;
+        }
+      }
+    }
+    return moved;
+  }
+
+  function buildPlan(s, gates, people, slots) {
+    var total = SIM_DAYS * 24;
+    var cap = capacity(gates, people);
+    var factCap = capacity(FACT_GATES, FACT_PEOPLE);
+    var arrivals = [];
+    var queue = [];
+    var t;
+
+    for (t = 0; t < total; t++) {
+      arrivals.push(t <= s.now ? actualAt(s.mode, t) : forecastAt(s.mode, t, s.today) * (1 + s.flow / 100));
+    }
+    var moved = slots ? spread(arrivals, s.now + 1, cap) : [];
+
     var q = 0;
-    return cars.map(function (n) {
-      q = Math.max(0, q + n - cap);
-      return q;
-    });
+    for (t = 0; t < total; t++) {
+      q = Math.max(0, q + arrivals[t] - (t <= s.now ? factCap : cap));
+      queue.push(q);
+    }
+    return { cap: cap, arrivals: arrivals, queue: queue, moved: moved, now: s.now };
   }
 
-  function windowHours() {
-    var hours = [];
-    for (var i = 0; i < WINDOW; i++) hours.push((NOW + i) % 24);
-    return hours;
+  function horizonEnd(s) {
+    var days = HORIZONS[s.horizon].days;
+    return days ? days * 24 - 1 : s.now + 7;
   }
 
-  function windowMax(queue) {
-    return Math.max.apply(null, windowHours().map(function (h) { return queue[h]; }));
+  function peakOf(plan, from, to) {
+    var peak = { value: 0, at: from };
+    for (var t = from; t <= to; t++) {
+      if (plan.queue[t] > peak.value + 0.001) peak = { value: plan.queue[t], at: t };
+    }
+    return peak;
   }
 
-  function recommendGates(cars) {
+  function firstHour(plan, from, to, test) {
+    for (var t = from; t <= to; t++) {
+      if (test(plan.queue[t], t)) return t;
+    }
+    return -1;
+  }
+
+  function holds(plan, end) {
+    var limit = Math.max(2, plan.queue[plan.now]) + 0.001;
+    var cleared = false;
+    for (var t = plan.now + 1; t <= end; t++) {
+      if (plan.queue[t] <= 2.001) cleared = true;
+      else if (cleared || plan.queue[t] > limit) return false;
+    }
+    return cleared;
+  }
+
+  function recommend(s, end) {
     for (var k = 1; k <= 30; k++) {
-      var q = queueByHour(cars, capacity(k, PEOPLE_PER_GATE * k));
-      if (windowMax(q) <= 2) return k;
+      if (holds(buildPlan(s, k, PEOPLE_PER_GATE * k, s.slots), end)) return k;
     }
     return null;
   }
 
-  function hh(h) { return (h < 10 ? '0' : '') + h + ':00'; }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
 
   function plural(n, one, few, many) {
     var d = n % 10, dd = n % 100;
@@ -341,6 +542,23 @@
     return many;
   }
 
+  function cars(n) { return n + ' ' + plural(n, 'машина', 'машины', 'машин'); }
+
+  function dayLabel(day, today) {
+    var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + day);
+    return WEEKDAYS[d.getDay()] + ' ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1);
+  }
+
+  function timeLabel(t, today) {
+    var day = Math.floor(t / 24);
+    var text = pad(t % 24) + ':00';
+    if (day === 1) return text + ' завтра';
+    if (day > 1) return text + ' ' + dayLabel(day, today);
+    return text;
+  }
+
+  function waitMinutes(q, cap) { return Math.round(q / cap * 60); }
+
   function el(tag, className, text) {
     var node = document.createElement(tag);
     if (className) node.className = className;
@@ -348,41 +566,80 @@
     return node;
   }
 
-  var $ = function (id) { return document.getElementById(id); };
-  var gatesInput = $('gates');
-  var peopleInput = $('people');
+  function $(id) { return document.getElementById(id); }
 
-  function currentMode() {
-    return document.querySelector('input[name="mode"]:checked').value;
+  function checked(name) {
+    return document.querySelector('input[name="' + name + '"]:checked').value;
   }
 
-  function renderStatus(cars, queue, gates, people) {
-    var hours = windowHours();
-    var wq = windowMax(queue);
+  function readState() {
+    var date = clock();
+    return {
+      date: date,
+      today: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+      now: date.getHours(),
+      mode: checked('mode'),
+      horizon: checked('horizon'),
+      slots: checked('slots') === 'on',
+      gates: Number($('gates').value),
+      people: Number($('people').value),
+      flow: Number($('flow').value)
+    };
+  }
+
+  function isGone(q) { return q <= 0.5; }
+
+  function renderStatus(s, plan, end) {
+    var from = s.now + 1;
+    var current = plan.queue[s.now];
+    var currentN = Math.round(current);
+    var peak = peakOf(plan, from, end);
+    var peakN = Math.round(peak.value);
+    var span = HORIZONS[s.horizon].span;
     var level, title, action;
 
-    if (wq > 5) {
+    if (Math.max(current, peak.value) > 5) {
       level = 'red';
-      var firstRed = hours.filter(function (h) { return queue[h] > 5; })[0];
-      var n = Math.round(wq);
-      title = 'К ' + hh(firstRed) + ' очередь до ' + n + ' ' + plural(n, 'машины', 'машин', 'машин');
+      var gone = firstHour(plan, from, end, isGone);
+      if (current <= 5) {
+        title = 'К ' + timeLabel(peak.at, s.today) + ' очередь вырастет до ' + peakN + ' ' + plural(peakN, 'машины', 'машин', 'машин');
+      } else if (peakN > currentN) {
+        title = 'Очередь уже ' + cars(currentN) + ', к ' + timeLabel(peak.at, s.today) + ' вырастет до ' + peakN;
+      } else if (gone >= 0) {
+        title = 'Очередь ' + cars(currentN) + ', уйдёт к ' + timeLabel(gone, s.today);
+      } else {
+        title = 'Очередь ' + cars(currentN) + ' и не уйдёт за ' + span;
+      }
 
-      var k = recommendGates(cars);
-      var addGates = k === null ? 0 : Math.max(0, k - gates);
-      var addPeople = k === null ? 0 : Math.max(0, PEOPLE_PER_GATE * k - people);
-      var parts = [];
-      if (addGates > 0) parts.push('откройте ещё ' + addGates + ' ворот');
-      if (addPeople > 0) parts.push('выведите ещё ' + addPeople + ' чел.');
-      action = 'Что сделать: ' + (parts.length ? parts.join(' и ') : 'перераспределите людей по воротам.');
-    } else if (wq > 0) {
+      var k = recommend(s, end);
+      if (k === null) {
+        action = 'Что сделать: ворот не хватит — переносите машины на другие часы и дни.';
+      } else {
+        var addGates = Math.max(0, k - s.gates);
+        var addPeople = Math.max(0, PEOPLE_PER_GATE * k - s.people);
+        var parts = [];
+        if (addGates > 0) parts.push('+' + addGates + ' ворот');
+        if (addPeople > 0) parts.push('+' + addPeople + ' чел. на смену');
+        var better = buildPlan(s, Math.max(s.gates, k), Math.max(s.people, PEOPLE_PER_GATE * k), s.slots);
+        var clear = firstHour(better, from, better.queue.length - 1, isGone);
+        var result = 'очереди не будет';
+        if (current > 2) {
+          result = (parts.length ? 'очередь перестанет расти' : 'очередь не растёт') +
+            (clear >= 0 ? ' и уйдёт к ' + timeLabel(clear, s.today) : '');
+        }
+        action = 'Что сделать: ' + (parts.length ? parts.join(' и ') : 'держите текущий состав') + ' — ' + result + '.';
+      }
+    } else if (Math.max(current, peak.value) > 0) {
       level = 'yellow';
-      var firstBusy = hours.filter(function (h) { return queue[h] > 0; })[0];
-      title = 'Будет плотно с ' + hh(firstBusy);
+      var busy = firstHour(plan, from, end, function (q) { return q > 0; });
+      if (current >= 0.5) title = 'Небольшая очередь: ' + cars(currentN);
+      else if (busy >= 0) title = 'Будет плотно с ' + timeLabel(busy, s.today);
+      else title = 'Сейчас плотно';
       action = 'Небольшая очередь, держите резерв людей под рукой.';
     } else {
       level = 'green';
       title = 'Всё спокойно';
-      action = 'Ворот и людей хватает до 22:00.';
+      action = 'Ворот и людей хватает на ближайшие ' + span + '.';
     }
 
     $('status').className = 'status ' + level;
@@ -390,85 +647,190 @@
     $('status-action').textContent = action;
   }
 
-  function renderHours(cars, queue, cap) {
-    var list = $('hours');
-    list.textContent = '';
-    windowHours().forEach(function (h) {
-      var q = queue[h];
-      var level, word;
-      if (q > 5) { level = 'red'; word = 'очередь'; }
-      else if (q > 0 || cars[h] / cap >= 0.85) { level = 'yellow'; word = 'плотно'; }
-      else { level = 'green'; word = 'свободно'; }
+  function card(label, level, word, count, wait, flow) {
+    var node = el('li', 'card ' + level);
+    node.appendChild(el('div', 'card-time', label));
+    node.appendChild(el('div', 'card-count', count));
+    node.appendChild(el('div', 'card-wait', '≈ ' + wait + ' мин'));
+    node.appendChild(el('div', 'card-flow', flow));
+    node.appendChild(el('div', 'card-state', word));
+    return node;
+  }
 
-      var card = el('li', 'hour ' + level);
-      card.appendChild(el('div', 'hour-time', hh(h)));
-      var count = el('div', 'hour-count', cars[h]);
-      count.setAttribute('aria-label', cars[h] + ' ' + plural(cars[h], 'машина', 'машины', 'машин'));
-      card.appendChild(count);
-      card.appendChild(el('div', 'hour-state', word));
-      list.appendChild(card);
+  function grade(q, load) {
+    if (q > 5) return ['red', 'очередь'];
+    if (q > 0 || load >= 0.85) return ['yellow', 'плотно'];
+    return ['green', 'свободно'];
+  }
+
+  function renderCards(s, plan) {
+    var list = $('cards');
+    var days = HORIZONS[s.horizon].days;
+    var t, g;
+    list.textContent = '';
+    list.className = days ? 'cards days' : 'cards';
+    $('cards-title').textContent = HORIZONS[s.horizon].title;
+
+    if (!days) {
+      $('cards-hint').textContent = 'Крупно — машин в очереди. Ниже — сколько ждать и сколько машин приедет за час.';
+      for (t = s.now; t <= s.now + 7; t++) {
+        g = grade(plan.queue[t], plan.arrivals[t] / plan.cap);
+        list.appendChild(card(
+          t === s.now ? 'сейчас' : pad(t % 24) + ':00', g[0], g[1],
+          Math.round(plan.queue[t]),
+          waitMinutes(plan.queue[t], plan.cap),
+          Math.round(plan.arrivals[t]) + ' в час'
+        ));
+      }
+      return;
+    }
+
+    $('cards-hint').textContent = 'Крупно — пик очереди за день. Ниже — сколько ждать в пик и сколько машин приедет за день.';
+    for (var day = 0; day < days; day++) {
+      var peak = peakOf(plan, day === 0 ? s.now : day * 24, day * 24 + 23);
+      var total = 0;
+      for (t = day * 24; t < day * 24 + 24; t++) total += plan.arrivals[t];
+      g = grade(peak.value, total / (plan.cap * 24));
+      list.appendChild(card(
+        day === 0 ? 'сегодня' : dayLabel(day, s.today), g[0], g[1],
+        Math.round(peak.value),
+        waitMinutes(peak.value, plan.cap),
+        Math.round(total) + ' за день'
+      ));
+    }
+  }
+
+  function renderGatesNote(s) {
+    var working = workingGates(s.gates, s.people);
+    var text = 'В работе ' + working + ' из ' + s.gates + ' ворот';
+    var spare = s.people - working * PEOPLE_PER_GATE;
+    if (working < s.gates) text += ', не хватает ' + (s.gates * PEOPLE_PER_GATE - s.people) + ' чел.';
+    else if (spare > 0) text += ', ' + spare + ' чел. в резерве.';
+    else text += '.';
+    $('gates-note').textContent = text;
+  }
+
+  function renderCompare(s, end) {
+    var box = $('compare');
+    box.textContent = '';
+    [false, true].forEach(function (slots) {
+      var plan = buildPlan(s, s.gates, s.people, slots);
+      var peak = Math.max(plan.queue[s.now], peakOf(plan, s.now + 1, end).value);
+      var tile = el('div', 'compare-tile' + (slots === s.slots ? ' active' : ''));
+      tile.appendChild(el('div', 'compare-name', slots ? 'Со слотами' : 'Без слотов'));
+      tile.appendChild(el('div', 'compare-queue', cars(Math.round(peak))));
+      tile.appendChild(el('div', 'compare-wait', 'ждать до ' + waitMinutes(peak, plan.cap) + ' мин'));
+      if (slots) {
+        var moved = 0;
+        for (var t = s.now + 1; t <= end; t++) moved += plan.moved[t];
+        moved = Math.round(moved);
+        tile.appendChild(el('div', 'compare-note', moved ? 'перенесено: ' + cars(moved) : 'переносить нечего'));
+      } else {
+        tile.appendChild(el('div', 'compare-note', 'пик очереди за ' + HORIZONS[s.horizon].span));
+      }
+      box.appendChild(tile);
     });
   }
 
-  function renderLongest(queue, cap) {
-    var maxQ = Math.max.apply(null, queue);
-    var n = Math.round(maxQ);
-    var wait = Math.round(maxQ / cap * 60);
-    var p = $('longest');
-    p.textContent = 'Самая длинная очередь сегодня: ';
-    p.appendChild(el('strong', null, n + ' ' + plural(n, 'машина', 'машины', 'машин')));
-    p.appendChild(document.createTextNode(', ждать до '));
-    p.appendChild(el('strong', null, wait + ' мин.'));
+  function renderFeedback(s) {
+    var p = $('feedback');
+    p.textContent = '';
+    if (s.now === 0) {
+      p.textContent = 'Сутки только начались — сравнивать пока нечего.';
+      return;
+    }
+    var forecast = 0, actual = 0, miss = 0;
+    for (var h = 0; h < s.now; h++) {
+      forecast += BASE[s.mode][h];
+      actual += actualAt(s.mode, h);
+      miss += Math.abs(actualAt(s.mode, h) - BASE[s.mode][h]);
+    }
+    p.appendChild(document.createTextNode('С 00:00 до ' + pad(s.now) + ':00 по прогнозу — '));
+    p.appendChild(el('strong', null, String(forecast)));
+    p.appendChild(document.createTextNode(', по факту — '));
+    p.appendChild(el('strong', null, cars(actual)));
+    p.appendChild(document.createTextNode('. Ошибка за период — '));
+    p.appendChild(el('strong', null, Math.round(Math.abs(actual - forecast) / forecast * 100) + ' %'));
+    p.appendChild(document.createTextNode(', по отдельным часам в среднем — '));
+    p.appendChild(el('strong', null, Math.round(miss / forecast * 100) + ' %'));
+    p.appendChild(document.createTextNode('.'));
   }
 
-  function renderTrucks(mode) {
+  function freeSlot(plan, from) {
+    return firstHour(plan, from, plan.queue.length - 1, function (q, t) {
+      return q <= 0.5 && plan.arrivals[t] + 1 <= plan.cap;
+    });
+  }
+
+  function renderTrucks(s, plan) {
     var list = $('trucks');
     list.textContent = '';
-    TRUCKS[mode].forEach(function (t) {
+    TRUCKS[s.mode].forEach(function (truck, index) {
+      var minutes = s.now * 60 + truck.offset;
+      var time = (truck.approx ? '≈' : '') + pad(Math.floor(minutes / 60) % 24) + ':' + pad(minutes % 60);
       var row = el('li', 'truck');
       var info = el('div', 'truck-info');
 
       var line = el('div', 'truck-line');
-      line.appendChild(el('strong', null, t.time));
+      line.appendChild(el('strong', null, time));
       line.appendChild(document.createTextNode(' · '));
-      if (t.plate) {
-        line.appendChild(document.createTextNode(t.plate));
-        if (t.gate != null) line.appendChild(document.createTextNode(' · ворота ' + t.gate));
+      if (truck.plate) {
+        line.appendChild(document.createTextNode(truck.plate));
+        if (truck.gate != null) line.appendChild(document.createTextNode(' · ворота ' + truck.gate));
       } else {
         line.appendChild(el('span', 'unknown', 'номер неизвестен'));
       }
       info.appendChild(line);
-      info.appendChild(el('div', 'truck-sub', t.who));
+      info.appendChild(el('div', 'truck-sub', truck.who));
+
+      if (truck.slot) {
+        var key = s.mode + index;
+        if (offered[key]) {
+          info.appendChild(el('span', 'slot-done', 'Слот ' + offered[key] + ' предложен'));
+        } else {
+          var slot = freeSlot(plan, Math.floor(minutes / 60) + 1);
+          if (slot >= 0) {
+            var label = timeLabel(slot, s.today);
+            var button = el('button', 'slot-btn', 'Предложить слот ' + label);
+            button.type = 'button';
+            button.addEventListener('click', function () {
+              offered[key] = label;
+              render();
+            });
+            info.appendChild(button);
+          }
+        }
+      }
 
       row.appendChild(info);
-      row.appendChild(el('span', 'badge ' + t.color, t.status));
+      row.appendChild(el('span', 'badge ' + truck.color, truck.status));
       list.appendChild(row);
     });
   }
 
   function render() {
-    var mode = currentMode();
-    var gates = Number(gatesInput.value);
-    var people = Number(peopleInput.value);
-    var cars = FORECAST[mode];
-    var cap = capacity(gates, people);
-    var queue = queueByHour(cars, cap);
+    var s = readState();
+    var plan = buildPlan(s, s.gates, s.people, s.slots);
+    var end = horizonEnd(s);
 
-    $('gates-value').textContent = gates;
-    $('people-value').textContent = people;
+    $('now').textContent = 'Сейчас ' + pad(s.date.getHours()) + ':' + pad(s.date.getMinutes()) + ', ' + dayLabel(0, s.today);
+    $('gates-value').textContent = s.gates;
+    $('people-value').textContent = s.people;
+    $('flow-value').textContent = '+' + s.flow + ' %';
 
-    renderStatus(cars, queue, gates, people);
-    renderHours(cars, queue, cap);
-    renderLongest(queue, cap);
-    renderTrucks(mode);
+    renderStatus(s, plan, end);
+    renderCards(s, plan);
+    renderGatesNote(s);
+    renderCompare(s, end);
+    renderFeedback(s);
+    renderTrucks(s, plan);
   }
 
-  gatesInput.addEventListener('input', render);
-  peopleInput.addEventListener('input', render);
-  Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function (radio) {
-    radio.addEventListener('change', render);
+  Array.prototype.forEach.call(document.querySelectorAll('input'), function (input) {
+    input.addEventListener(input.type === 'range' ? 'input' : 'change', render);
   });
 
+  setInterval(render, 30000);
   render();
 })();
 </script>
