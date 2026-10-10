@@ -391,6 +391,7 @@
   var FACT_PEOPLE = 27;
   var SIM_DAYS = 15;
   var SLOT_REACH = 4;
+  var DEMO_HOUR = 14;
 
   var BASE = {
     inbound:  [3, 2, 2, 2, 3, 5, 8, 12, 15, 17, 18, 16, 14, 13, 14, 15, 16, 14, 11, 9, 7, 5, 4, 3],
@@ -428,6 +429,7 @@
 
   var pinnedHour = parseInt(new URLSearchParams(location.search).get('now'), 10);
   var offered = {};
+  var shift = 0;
 
   function clock() {
     var d = new Date();
@@ -444,7 +446,7 @@
   }
 
   function forecastAt(mode, t, today) {
-    var day = Math.floor(t / 24);
+    var day = Math.floor((t + shift) / 24);
     var factor = day === 0 ? 1 : DAY_FACTOR[mode][(today.getDay() + day) % 7];
     return BASE[mode][t % 24] * factor;
   }
@@ -498,7 +500,7 @@
 
   function horizonEnd(s) {
     var days = HORIZONS[s.horizon].days;
-    return days ? days * 24 - 1 : s.now + 7;
+    return days ? days * 24 - 1 - shift : s.now + 7;
   }
 
   function peakOf(plan, from, to) {
@@ -550,8 +552,8 @@
   }
 
   function timeLabel(t, today) {
-    var day = Math.floor(t / 24);
-    var text = pad(t % 24) + ':00';
+    var day = Math.floor((t + shift) / 24);
+    var text = pad((t + shift) % 24) + ':00';
     if (day === 1) return text + ' завтра';
     if (day > 1) return text + ' ' + dayLabel(day, today);
     return text;
@@ -574,10 +576,11 @@
 
   function readState() {
     var date = clock();
+    shift = date.getHours() - DEMO_HOUR;
     return {
       date: date,
       today: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-      now: date.getHours(),
+      now: DEMO_HOUR,
       mode: checked('mode'),
       horizon: checked('horizon'),
       slots: checked('slots') === 'on',
@@ -676,7 +679,7 @@
       for (t = s.now; t <= s.now + 7; t++) {
         g = grade(plan.queue[t], plan.arrivals[t] / plan.cap);
         list.appendChild(card(
-          t === s.now ? 'сейчас' : pad(t % 24) + ':00', g[0], g[1],
+          t === s.now ? 'сейчас' : pad((t + shift) % 24) + ':00', g[0], g[1],
           Math.round(plan.queue[t]),
           waitMinutes(plan.queue[t], plan.cap),
           Math.round(plan.arrivals[t]) + ' в час'
@@ -687,9 +690,9 @@
 
     $('cards-hint').textContent = 'Крупно — пик очереди за день. Ниже — сколько ждать в пик и сколько машин приедет за день.';
     for (var day = 0; day < days; day++) {
-      var peak = peakOf(plan, day === 0 ? s.now : day * 24, day * 24 + 23);
+      var peak = peakOf(plan, day === 0 ? s.now : day * 24 - shift, day * 24 + 23 - shift);
       var total = 0;
-      for (t = day * 24; t < day * 24 + 24; t++) total += plan.arrivals[t];
+      for (t = day * 24 - shift; t < day * 24 + 24 - shift; t++) total += plan.arrivals[t < 0 ? t + 24 : t];
       g = grade(peak.value, total / (plan.cap * 24));
       list.appendChild(card(
         day === 0 ? 'сегодня' : dayLabel(day, s.today), g[0], g[1],
@@ -745,7 +748,7 @@
       actual += actualAt(s.mode, h);
       miss += Math.abs(actualAt(s.mode, h) - BASE[s.mode][h]);
     }
-    p.appendChild(document.createTextNode('С 00:00 до ' + pad(s.now) + ':00 по прогнозу — '));
+    p.appendChild(document.createTextNode('За последние ' + s.now + ' часов по прогнозу — '));
     p.appendChild(el('strong', null, String(forecast)));
     p.appendChild(document.createTextNode(', по факту — '));
     p.appendChild(el('strong', null, cars(actual)));
@@ -767,7 +770,7 @@
     list.textContent = '';
     TRUCKS[s.mode].forEach(function (truck, index) {
       var minutes = s.now * 60 + truck.offset;
-      var time = (truck.approx ? '≈' : '') + pad(Math.floor(minutes / 60) % 24) + ':' + pad(minutes % 60);
+      var time = (truck.approx ? '≈' : '') + pad((Math.floor(minutes / 60) + shift) % 24) + ':' + pad(minutes % 60);
       var row = el('li', 'truck');
       var info = el('div', 'truck-info');
 
