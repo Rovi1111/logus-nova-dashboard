@@ -215,6 +215,7 @@
     padding: 12px;
     min-width: 0;
   }
+  .compare-tile { cursor: pointer; }
   .compare-tile.active { border-color: var(--accent); }
   .compare-name { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); }
   .compare-queue {
@@ -719,7 +720,8 @@
     [false, true].forEach(function (slots) {
       var plan = buildPlan(s, s.gates, s.people, slots);
       var peak = Math.max(plan.queue[s.now], peakOf(plan, s.now + 1, end).value);
-      var tile = el('div', 'compare-tile' + (slots === s.slots ? ' active' : ''));
+      var tile = el('label', 'compare-tile' + (slots === s.slots ? ' active' : ''));
+      tile.htmlFor = slots ? 'slots-on' : 'slots-off';
       tile.appendChild(el('div', 'compare-name', slots ? 'Со слотами' : 'Без слотов'));
       tile.appendChild(el('div', 'compare-queue', cars(Math.round(peak))));
       tile.appendChild(el('div', 'compare-wait', 'ждать до ' + waitMinutes(peak, plan.cap) + ' мин'));
